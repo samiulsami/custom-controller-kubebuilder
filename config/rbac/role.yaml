@@ -1,0 +1,32 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - hehe.black.cat
+  resources:
+  - testkinds
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - hehe.black.cat
+  resources:
+  - testkinds/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - hehe.black.cat
+  resources:
+  - testkinds/status
+  verbs:
+  - get
+  - patch
+  - update

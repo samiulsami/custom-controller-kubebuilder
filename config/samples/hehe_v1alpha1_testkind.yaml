@@ -1,0 +1,9 @@
+apiVersion: hehe.black.cat/v1alpha1
+kind: TestKind
+metadata:
+  labels:
+    app.kubernetes.io/name: kubebuildertest
+    app.kubernetes.io/managed-by: kustomize
+  name: testkind-sample
+spec:
+  # TODO(user): Add fields here

@@ -1,0 +1,23 @@
+# permissions for end users to view testkinds.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: kubebuildertest
+    app.kubernetes.io/managed-by: kustomize
+  name: testkind-viewer-role
+rules:
+- apiGroups:
+  - hehe.black.cat
+  resources:
+  - testkinds
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - hehe.black.cat
+  resources:
+  - testkinds/status
+  verbs:
+  - get
