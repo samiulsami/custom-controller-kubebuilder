@@ -4,6 +4,18 @@ metadata:
   labels:
     app.kubernetes.io/name: kubebuildertest
     app.kubernetes.io/managed-by: kustomize
-  name: testkind-sample
+  name: bookstore-controller-test-kubebuilder
 spec:
-  # TODO(user): Add fields here
+  envAdminUsername: adminUsername
+  envAdminPassword: adminPassword
+  envJWTSECRET: jwtSecret
+  deploymentImageName: sami7786/gobookstoreapi
+  deploymentImageTag: latest
+  imagePullPolicy: Always
+  deploymentName: bookstore-controller-test-kubebuilder-deployment
+  replicas: 3
+  serviceName: bookstore-controller-test-kubebuilder-service
+  serviceType: LoadBalancer
+  containerPort: 3000
+  targetPort: 3000
+  nodePort: 30000

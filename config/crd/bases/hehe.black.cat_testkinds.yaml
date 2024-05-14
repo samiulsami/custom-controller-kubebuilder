@@ -39,13 +39,158 @@ spec:
           spec:
             description: TestKindSpec defines the desired state of TestKind
             properties:
-              foo:
-                description: Foo is an example field of TestKind. Edit testkind_types.go
-                  to remove/update
+              containerPort:
+                description: "3000"
+                format: int32
+                type: integer
+              deploymentImageName:
                 type: string
+              deploymentImageTag:
+                type: string
+              deploymentName:
+                type: string
+              envAdminPassword:
+                type: string
+              envAdminUsername:
+                type: string
+              envJWTSECRET:
+                type: string
+              imagePullPolicy:
+                description: LoadBalancer, ClusterIP, NodePort
+                type: string
+              nodePort:
+                description: "3000"
+                format: int32
+                type: integer
+              replicas:
+                format: int32
+                type: integer
+              serviceName:
+                type: string
+              serviceType:
+                type: string
+              targetPort:
+                description: "3000"
+                format: int32
+                type: integer
+              testMap2:
+                additionalProperties:
+                  type: string
+                type: object
+              unholyAbomination:
+                additionalProperties:
+                  additionalProperties:
+                    additionalProperties:
+                      additionalProperties:
+                        additionalProperties:
+                          additionalProperties:
+                            additionalProperties:
+                              additionalProperties:
+                                additionalProperties:
+                                  additionalProperties:
+                                    additionalProperties:
+                                      additionalProperties:
+                                        additionalProperties:
+                                          additionalProperties:
+                                            additionalProperties:
+                                              additionalProperties:
+                                                additionalProperties:
+                                                  additionalProperties:
+                                                    additionalProperties:
+                                                      additionalProperties:
+                                                        additionalProperties:
+                                                          additionalProperties:
+                                                            additionalProperties:
+                                                              additionalProperties:
+                                                                additionalProperties:
+                                                                  additionalProperties:
+                                                                    additionalProperties:
+                                                                      additionalProperties:
+                                                                        additionalProperties:
+                                                                          additionalProperties:
+                                                                            additionalProperties:
+                                                                              additionalProperties:
+                                                                                additionalProperties:
+                                                                                  additionalProperties:
+                                                                                    additionalProperties:
+                                                                                      additionalProperties:
+                                                                                        additionalProperties:
+                                                                                          additionalProperties:
+                                                                                            additionalProperties:
+                                                                                              additionalProperties:
+                                                                                                additionalProperties:
+                                                                                                  additionalProperties:
+                                                                                                    format: int32
+                                                                                                    type: integer
+                                                                                                  type: object
+                                                                                                type: object
+                                                                                              type: object
+                                                                                            type: object
+                                                                                          type: object
+                                                                                        type: object
+                                                                                      type: object
+                                                                                    type: object
+                                                                                  type: object
+                                                                                type: object
+                                                                              type: object
+                                                                            type: object
+                                                                          type: object
+                                                                        type: object
+                                                                      type: object
+                                                                    type: object
+                                                                  type: object
+                                                                type: object
+                                                              type: object
+                                                            type: object
+                                                          type: object
+                                                        type: object
+                                                      type: object
+                                                    type: object
+                                                  type: object
+                                                type: object
+                                              type: object
+                                            type: object
+                                          type: object
+                                        type: object
+                                      type: object
+                                    type: object
+                                  type: object
+                                type: object
+                              type: object
+                            type: object
+                          type: object
+                        type: object
+                      type: object
+                    type: object
+                  type: object
+                description: Huge nested map test
+                type: object
+            required:
+            - containerPort
+            - deploymentImageName
+            - deploymentImageTag
+            - deploymentName
+            - envAdminPassword
+            - envAdminUsername
+            - envJWTSECRET
+            - imagePullPolicy
+            - nodePort
+            - replicas
+            - serviceName
+            - serviceType
+            - targetPort
             type: object
           status:
             description: TestKindStatus defines the observed state of TestKind
+            properties:
+              replicaCount:
+                description: |-
+                  INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
+                format: int32
+                type: integer
+            required:
+            - replicaCount
             type: object
         type: object
     served: true

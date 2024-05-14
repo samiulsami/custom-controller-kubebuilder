@@ -28,14 +28,37 @@ type TestKindSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of TestKind. Edit testkind_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	EnvAdminUsername string `json:"envAdminUsername"`
+	EnvAdminPassword string `json:"envAdminPassword"`
+	EnvJWTSECRET     string `json:"envJWTSECRET"`
+
+	DeploymentImageName string `json:"deploymentImageName"`
+	DeploymentImageTag  string `json:"deploymentImageTag"`
+	// LoadBalancer, ClusterIP, NodePort
+	ImagePullPolicy string `json:"imagePullPolicy"`
+
+	DeploymentName string `json:"deploymentName"`
+	Replicas       *int32 `json:"replicas"`
+	ServiceName    string `json:"serviceName"`
+	ServiceType    string `json:"serviceType"`
+
+	//3000
+	ContainerPort int32 `json:"containerPort"`
+	//3000
+	NodePort int32 `json:"nodePort"`
+	//3000
+	TargetPort int32 `json:"targetPort"`
+
+	TestMap2 map[string]string `json:"testMap2,omitempty"`
+	// Huge nested map test
+	UnholyAbomination map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]map[string]int32 `json:"unholyAbomination,omitempty"`
 }
 
 // TestKindStatus defines the observed state of TestKind
 type TestKindStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	ReplicaCount int32 `json:"replicaCount"`
 }
 
 //+kubebuilder:object:root=true
@@ -57,6 +80,13 @@ type TestKindList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []TestKind `json:"items"`
+}
+
+func (testKind *TestKind) GetSelectorLabels() map[string]string {
+	return map[string]string{
+		"app":        testKind.Name + "-app",
+		"controller": testKind.Name + "-customController1",
+	}
 }
 
 func init() {
