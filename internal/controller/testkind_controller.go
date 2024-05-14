@@ -18,11 +18,16 @@ package controller
 
 import (
 	"context"
-
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	logger "sigs.k8s.io/controller-runtime/pkg/log"
 
 	hehev1alpha1 "kubebuilderTest/api/v1alpha1"
 )
@@ -30,7 +35,8 @@ import (
 // TestKindReconciler reconciles a TestKind object
 type TestKindReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=hehe.black.cat,resources=testkinds,verbs=get;list;watch;create;update;patch;delete
@@ -47,16 +53,73 @@ type TestKindReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.3/pkg/reconcile
 func (r *TestKindReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	log := logger.FromContext(ctx)
+	r.Recorder.Event(&hehev1alpha1.TestKind{}, corev1.EventTypeNormal, "testReason", "testRecorderMessage")
 
-	// TODO(user): your logic here
+	testKindObj := &hehev1alpha1.TestKind{}
+	if err := r.Client.Get(ctx, req.NamespacedName, testKindObj); err != nil {
+		log.Error(err, "unable to fetch TestKind resource")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	deployment := &appsv1.Deployment{}
+	if err := r.Client.Get(ctx, types.NamespacedName{Namespace: req.Namespace, Name: testKindObj.Spec.DeploymentName}, deployment); errors.IsNotFound(err) {
+		if err := r.Client.Create(ctx, getDeployment(testKindObj)); err != nil {
+			log.Error(err, "unable to create deployment")
+			return ctrl.Result{}, err
+		}
+	} else if deploymentUpdateRequired(testKindObj, deployment) {
+		if err := r.Client.Update(ctx, getDeployment(testKindObj)); err != nil {
+			log.Error(err, "unable to update deployment")
+			return ctrl.Result{}, err
+		}
+	} else if err != nil {
+		log.Error(err, "error getting deployment")
+		return ctrl.Result{}, err
+	}
+
+	service := &corev1.Service{}
+	if err := r.Client.Get(ctx, types.NamespacedName{Namespace: req.Namespace, Name: testKindObj.Spec.ServiceName}, service); errors.IsNotFound(err) {
+		if err := r.Client.Create(ctx, getService(testKindObj)); err != nil {
+			log.Error(err, "unable to create service")
+			return ctrl.Result{}, err
+		}
+	} else if serviceUpdateRequired(testKindObj, service) {
+		if err := r.Client.Update(ctx, getService(testKindObj)); err != nil {
+			log.Error(err, "unable to update service")
+			return ctrl.Result{}, err
+		}
+	}
+
+	if err := r.updateTestKindStatus(ctx, testKindObj, deployment); err != nil {
+		log.Error(err, "unable to update TestKindStatus")
+		return ctrl.Result{}, err
+	}
+
+	r.Recorder.Event(testKindObj, corev1.EventTypeNormal, "Reconciled", "Reconciliation successful")
 
 	return ctrl.Result{}, nil
+}
+
+func (r *TestKindReconciler) updateTestKindStatus(ctx context.Context, testKindObj *hehev1alpha1.TestKind, deployment *appsv1.Deployment) error {
+	testKindObjCopy := testKindObj.DeepCopy()
+	testKindObjCopy.Status.ReplicaCount = deployment.Status.AvailableReplicas
+
+	if err := r.Status().Update(ctx, testKindObjCopy); err != nil {
+		return err
+	}
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TestKindReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&hehev1alpha1.TestKind{}).
+		//Owns(&corev1.Pod{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{}).
+		WithOptions(
+			controller.Options{MaxConcurrentReconciles: 8},
+		).
 		Complete(r)
 }

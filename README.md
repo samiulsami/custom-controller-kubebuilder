@@ -1,5 +1,7 @@
 # kubebuildertest
-// TODO(user): Add simple overview of use/purpose
+- `kubebuilder init --domain black.cat --skip-go-version-check`
+- `kubebuilder create api --group hehe --version v1alpha1 --kind TestKind`
+- `make generate manifests`
 
 ## Description
 // TODO(user): An in-depth paragraph about your project and overview of use
