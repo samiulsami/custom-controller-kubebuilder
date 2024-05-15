@@ -21,13 +21,17 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logger "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 
 	hehev1alpha1 "kubebuilderTest/api/v1alpha1"
 )
@@ -60,7 +64,9 @@ func (r *TestKindReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	log.Info("request name and namespace", "Name", req.NamespacedName.Name, "Namespace", req.NamespacedName.Namespace)
 	deployment := &appsv1.Deployment{}
+
 	if err := r.Client.Get(ctx, types.NamespacedName{Namespace: req.Namespace, Name: testKindObj.Spec.DeploymentName}, deployment); errors.IsNotFound(err) {
 		if err := r.Client.Create(ctx, getDeployment(testKindObj)); err != nil {
 			log.Error(err, "unable to create deployment")
@@ -111,13 +117,31 @@ func (r *TestKindReconciler) updateTestKindStatus(ctx context.Context, testKindO
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TestKindReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	reconciliationSourceChannel := make(chan event.GenericEvent)
+
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				reconciliationSourceChannel <- event.GenericEvent{
+					Object: &hehev1alpha1.TestKind{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "bookstore-controller-test-kubebuilder",
+							Namespace: "default",
+						},
+					},
+				}
+			}
+		}
+	}()
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&hehev1alpha1.TestKind{}).
 		//Owns(&corev1.Pod{}).
-		//Owns(&appsv1.Deployment{}).
-		Owns(&corev1.Service{}).
-		WithOptions(
-			controller.Options{MaxConcurrentReconciles: 8},
-		).
+		///Owns(&appsv1.Deployment{}).
+		//Owns(&corev1.Service{}).
+		Watches(&source.Channel{Source: reconciliationSourceChannel}, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
