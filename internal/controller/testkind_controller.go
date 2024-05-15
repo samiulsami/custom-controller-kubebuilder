@@ -54,8 +54,6 @@ type TestKindReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.3/pkg/reconcile
 func (r *TestKindReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logger.FromContext(ctx)
-	r.Recorder.Event(&hehev1alpha1.TestKind{}, corev1.EventTypeNormal, "testReason", "testRecorderMessage")
-
 	testKindObj := &hehev1alpha1.TestKind{}
 	if err := r.Client.Get(ctx, req.NamespacedName, testKindObj); err != nil {
 		log.Error(err, "unable to fetch TestKind resource")
@@ -115,8 +113,8 @@ func (r *TestKindReconciler) updateTestKindStatus(ctx context.Context, testKindO
 func (r *TestKindReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&hehev1alpha1.TestKind{}).
-		Owns(&corev1.Pod{}).
-		Owns(&appsv1.Deployment{}).
+		//Owns(&corev1.Pod{}).
+		//Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
 		WithOptions(
 			controller.Options{MaxConcurrentReconciles: 8},
